@@ -148,3 +148,5 @@ crashlytics.properties
 crashlytics-build.properties
 
 
+# json files with identifiers (don't want that to be on github)
+ident.json
