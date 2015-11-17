@@ -30,7 +30,7 @@ class SMTPGateway(smtpd.SMTPServer):
     # Override process_message from smtpd.STMPServer class
     def process_message(self, peer, mailfrom, rcpttos, data):
         print('\n\nThe server is processing your email...\n\n')
-        print(data, '\n\n')
+        # print(data, '\n\n')
         forbidden_words = self.check_message(data)
         virus = self.check_for_virus(data)
         if len(forbidden_words) > 0 or virus:
