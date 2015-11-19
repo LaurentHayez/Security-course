@@ -35,7 +35,7 @@ class SMTPGateway(smtpd.SMTPServer):
     def process_message(self, peer, mailfrom, rcpttos, data):
         print('\n\nThe server is processing your email...\n\n')
         #print(mailfrom, peer[0], '\n\n')
-        #test = self.check_if_spam(('80.218.18.1', '3423'))
+        test = self.check_if_spam(('80.218.18.1', '3423'))
         forbidden_words = self.check_message(data)
         virus = self.check_for_virus(data)
         spam = self.check_if_spam(peer)
@@ -113,9 +113,8 @@ class SMTPGateway(smtpd.SMTPServer):
     @staticmethod
     def check_if_spam(peer):
         # to reverse ip numbers in a pythonic manner
-        # ''.join(x+"." for x in peer[0].split('.')[::-1])
-        return subprocess.call(['bash', '-c', 'host -t A \"' + ''.join(x + '.' for x in peer[0].split('.')[::-1]) +
-                                'dnsbl.sorbs.net\"'])
+        # '.'.join(peer[0].split('.')[::-1])
+        return subprocess.call(['/usr/bin/host', '-t', 'A', '.'.join(peer[0].split('.')[::-1]) + '.dnsbl.sorbs.net'])
 
 
 server = SMTPGateway(('127.0.0.1', 1025), (smtp_server, smtp_port), None)
