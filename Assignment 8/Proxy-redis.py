@@ -44,21 +44,22 @@ class HTTPProxy(BaseHTTPRequestHandler):
 
     def cachable(self, request):
         cache_control = request.headers.get('cache-control')
-        if cache_control != 'no-cache' and cache_control != 'no-store' and cache_control != 'max-age=0':
-            return True
-        return False
+        print('\n\n', request.headers, '\n\n')
+        #print("Cache-control: ", cache_control)
+        #return cache_control != 'no-cache' and cache_control != 'no-store' and cache_control != 'max-age=0'
+        return cache_control and not ('no-cache' in cache_control or 'no-store' in cache_control or 'max-age=0' in cache_control)
 
     def do_GET(self):
         # value can be None, so unpickle it only if it is not none
         value = self.get_from_cache(self.path)
-        if value:
+        if value: # if value exists, then it is in the cache
             value = pickle.loads(value)
             print('Web page fetched from cache.')
             self.send_response(value.status_code)
             self.send_header('Content-type', value.headers.get('content-type'))
             self.end_headers()
             self.wfile.write(value.content)
-        else:
+        else: # else the value is not in the cache
             if self.treat_request(self.headers['host']):
                 request = get(self.path)
 
@@ -66,6 +67,8 @@ class HTTPProxy(BaseHTTPRequestHandler):
                 if self.cachable(request):
                     print('Web page cached.')
                     self.put_in_cache(self.path, request)
+                else:
+                    print('Web page not cachable.')
 
                 self.send_response(request.status_code)
                 self.send_header('Content-type', request.headers.get('content-type'))
