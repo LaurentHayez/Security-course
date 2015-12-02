@@ -11,7 +11,7 @@ import re
 
 from requests import get
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import hashlib, redis
+import hashlib, redis, pickle
 
 
 class HTTPProxy(BaseHTTPRequestHandler):
@@ -33,11 +33,13 @@ class HTTPProxy(BaseHTTPRequestHandler):
         cls.cache = redis.Redis("localhost")
 
     def put_in_cache(self, key, web_page):
-        # self.cache.set(hashlib.sha1(web_page.headers['host'].encode('utf-8')).hexdigest(), web_page)
-        self.cache.set(key, web_page)
+        # hash key so that there is no forbidden caracters
+        key = hashlib.sha1(key.encode('utf-8')).hexdigest()
+        # web_page is the request done with requests.get(...). Pickle it so that we can get it later
+        self.cache.set(key, pickle.dumps(web_page))
 
     def get_from_cache(self, key):
-        # return self.cache.get(hashlib.sha1(key.encode('utf-8')).hexdigest())
+        key = hashlib.sha1(key.encode('utf-8')).hexdigest()
         return self.cache.get(key)
 
     def cachable(self, request):
@@ -47,10 +49,10 @@ class HTTPProxy(BaseHTTPRequestHandler):
         return False
 
     def do_GET(self):
-
+        # value can be None, so unpickle it only if it is not none
         value = self.get_from_cache(self.path)
         if value:
-            #print("\n"+value.content[:100]+"\n")
+            value = pickle.loads(value)
             print('Web page fetched from cache.')
             self.send_response(value.status_code)
             self.send_header('Content-type', value.headers.get('content-type'))
