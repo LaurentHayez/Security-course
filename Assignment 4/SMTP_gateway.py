@@ -31,7 +31,8 @@ class SMTPGateway(smtpd.SMTPServer):
             remote_server = smtplib.SMTP(smtp_server, smtp_port)
             # As we use port 587, we need to start TLS connection and need authentication
             remote_server.starttls()
-            remote_server.login('l.hayez@hotmail.com', 'maLauPat93')
+            # Add email and password here :)
+            remote_server.login('foo@bar.com', '*****')
             remote_server.set_debuglevel(True)  # show communication with the server
             try:
                 remote_server.sendmail(mailfrom, rcpttos, data)
